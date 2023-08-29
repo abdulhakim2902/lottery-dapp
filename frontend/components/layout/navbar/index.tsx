@@ -9,7 +9,7 @@ export default function Navbar() {
       <div className={styles.leftContent}>
         <a
           className={styles.button}
-          href="https://github.com/consensus-collective/lottery-dapp"
+          href="https://github.com/abdulhakim2902/lottery-dapp"
           target={"_blank"}
         >
           <p>Github Repository</p>
