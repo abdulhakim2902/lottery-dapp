@@ -1,27 +1,26 @@
 import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
 import { formatEther, parseEther } from "viem";
+import { useLottery } from "@/hooks/use-lottery.hook";
+import { useToken } from "@/hooks/use-token.hook";
+import { useAccount } from "wagmi";
 
-import styles from "./admin.module.css";
+import styles from "./balance.module.css";
 
-interface Props {
-  balance: bigint;
-  ratio: bigint;
-  allowance: bigint;
-  loading: boolean;
-  onApprove: (amount: bigint) => Promise<void>;
-  onReturn: (amount: bigint, cb?: () => void) => Promise<void>;
-}
-
-export function AdminBalance(props: Props) {
-  const { balance, onReturn, loading, ratio, allowance, onApprove } = props;
-
+export function Balance() {
+  const [loading, setLoading] = useState<boolean>(false);
   const [approved, setApproved] = useState<boolean>(false);
   const [text, setText] = useState<string>("Return Token");
   const [amount, setAmount] = useState<string>("0");
   const [amountBN, setAmountBN] = useState<bigint>(BigInt(0));
 
   const { enqueueSnackbar } = useSnackbar();
+  const { isDisconnected, isConnecting } = useAccount();
+  const { contract, returnTokens, purchaseRatio } = useLottery();
+  const { balance, approve, allowance, symbol } = useToken(contract);
+
+  const { writeAsync: writeReturnTokens } = returnTokens;
+  const { writeAsync: writeApprove } = approve;
 
   useEffect(() => {
     if (loading) {
@@ -32,12 +31,12 @@ export function AdminBalance(props: Props) {
       }
     } else {
       if (approved) {
-        setText("Return Token");
+        setText(`Return ${symbol} Token`);
       } else {
         setText("Approve");
       }
     }
-  }, [approved, loading]);
+  }, [approved, loading, symbol]);
 
   useEffect(() => {
     setApproved(allowance >= amountBN);
@@ -56,35 +55,55 @@ export function AdminBalance(props: Props) {
     setAmountBN(amountBN);
   };
 
-  const onWithdrawToken = async () => {
-    await onReturn(amountBN, () => {
+  const onApprove = async () => {
+    setLoading(true);
+
+    try {
+      await writeApprove({ args: [contract, amountBN] });
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onReturn = async () => {
+    setLoading(true);
+
+    try {
+      await writeReturnTokens({ args: [amountBN] });
       setAmountBN(BigInt(0));
       setAmount("0");
-    });
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onMouseLeave = () => {
-    if (ratio <= 0) return;
+    if (purchaseRatio <= 0) return;
     if (amountBN <= 0) return;
     enqueueSnackbar({
       variant: "info",
-      message: `You will receive ${formatEther(amountBN / ratio)} ETH`,
+      message: `You will receive ${formatEther(amountBN / purchaseRatio)} ETH`,
     });
   };
 
   return (
     <div className={styles.container}>
-      <p className={styles.title}>Admin balance</p>
-      <p>Token Amount: {formatEther(balance)}</p>
+      <p>
+        Token Amount: {formatEther(balance)} {symbol}
+      </p>
       <input
         value={amount}
         onChange={onChange}
-        disabled={loading}
+        disabled={loading || isConnecting || isDisconnected}
         onMouseLeave={onMouseLeave}
       />
       <button
         disabled={loading || balance <= 0}
-        onClick={approved ? onWithdrawToken : () => onApprove(amountBN)}
+        onClick={approved ? onReturn : onApprove}
       >
         {text}
       </button>

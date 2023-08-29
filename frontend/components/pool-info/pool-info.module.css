@@ -6,3 +6,13 @@
   border-radius: 20px;
   background-color: aliceblue;
 }
+
+.container h4 {
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.container p {
+  font-size: small;
+  padding-top: 10px;
+}

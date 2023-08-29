@@ -67,9 +67,17 @@ export function useToken(spender?: string) {
     watch: true,
   });
 
+  const symbol = useContractRead({
+    address: TOKEN_CONTRACT as `0x${string}`,
+    abi: TOKEN.abi,
+    functionName: "symbol",
+    args: [],
+  });
+
   return {
     approve,
     balance: (balanceOf as ContractData)?.data ?? BigInt(0),
     allowance: (allowance as ContractData)?.data ?? BigInt(0),
+    symbol: (symbol?.data as string) ?? "",
   };
 }

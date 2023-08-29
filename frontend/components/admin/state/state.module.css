@@ -36,11 +36,3 @@
   margin-top: 0.5rem;
   text-align: center;
 }
-
-.admin_balance {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  width: 380px;
-}

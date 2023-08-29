@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import ShowIf from "@/components/common/show-if";
 
-import styles from "./admin.module.css";
-
-interface Props {
-  state: boolean;
-  loading: boolean;
-  onOpen: (time: string) => Promise<void>;
-}
+import styles from "./state.module.css";
+import { useLottery } from "@/hooks/use-lottery.hook";
+import { Duration } from "./duration";
 
 interface Durations {
   days: number;
@@ -17,9 +13,8 @@ interface Durations {
   seconds: number;
 }
 
-export function LotteryState(props: Props) {
-  const { state, loading, onOpen } = props;
-
+export function LotteryState() {
+  const [loading, setLoading] = useState<boolean>(false);
   const [reset, setReset] = useState<boolean>(false);
   const [closingTimeDuration, setClosingTimeDuration] = useState<number>(0);
   const [durations, setDurations] = useState<Durations>({
@@ -28,6 +23,10 @@ export function LotteryState(props: Props) {
     minutes: 0,
     seconds: 0,
   });
+
+  const { betsOpen, openBets } = useLottery();
+
+  const { writeAsync } = openBets;
 
   const onChangeDuration = (duration: number, dimension: string) => {
     if (dimension === "Days") {
@@ -80,18 +79,27 @@ export function LotteryState(props: Props) {
   };
 
   const onStart = async () => {
-    const closingTimeInMs = closingTimeDuration + Date.now();
-    const closingTimeInS = Math.floor(closingTimeInMs / 1000);
-    await onOpen(closingTimeInS.toString());
-    onReset();
+    setLoading(true);
+
+    try {
+      const closingTimeInMs = closingTimeDuration + Date.now();
+      const closingTimeInS = Math.floor(closingTimeInMs / 1000);
+
+      await writeAsync({ args: [closingTimeInS.toString()] });
+      onReset();
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.container}>
       <p className={styles.title}>State</p>
-      <p>{state ? "Bets is Open" : "Bets is Closed"}</p>
+      <p>{betsOpen ? "Bets is Open" : "Bets is Closed"}</p>
 
-      <ShowIf condition={!state}>
+      <ShowIf condition={!betsOpen}>
         <div className={styles.duration}>
           <div className={styles.times}>
             <Duration
@@ -141,87 +149,4 @@ export function LotteryState(props: Props) {
       </ShowIf>
     </div>
   );
-}
-
-interface DurationProps {
-  dimension: string;
-  loading: boolean;
-  reset: boolean;
-  onClear: (isClear: boolean) => void;
-  onChangeDuration: (duration: number, dimension: string) => void;
-}
-
-function Duration(props: DurationProps) {
-  const { dimension, loading, onChangeDuration, reset, onClear } = props;
-
-  const [duration, setDuration] = useState<string>("0");
-
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    const currentDuration = validateNumber(value, dimension);
-    if (!currentDuration) {
-      return;
-    }
-
-    let durationInMs = 0;
-    switch (dimension) {
-      case "Days":
-        durationInMs = +currentDuration * 24 * 60 * 60 * 1000;
-        break;
-      case "Hours":
-        durationInMs = +currentDuration * 60 * 60 * 1000;
-        break;
-      case "Minutes":
-        durationInMs = +currentDuration * 60 * 1000;
-        break;
-      default:
-        durationInMs = +currentDuration * 1000;
-    }
-
-    setDuration(currentDuration);
-    onChangeDuration(durationInMs, dimension);
-  };
-
-  useEffect(() => {
-    if (!reset) return;
-    setDuration("0");
-    onClear(true);
-  }, [reset]);
-
-  return (
-    <React.Fragment>
-      <p>{dimension}</p>
-      <input
-        style={{ width: "50%" }}
-        value={duration}
-        onChange={onChange}
-        disabled={loading}
-      />
-    </React.Fragment>
-  );
-}
-
-function validateNumber(value: string, dimension: string): string {
-  const regex = new RegExp(/^\d*$/);
-  if (!regex.exec(value)) {
-    return "";
-  }
-
-  const duration = Number(value);
-
-  switch (dimension) {
-    case "Days":
-      break;
-    case "Hours":
-      if (duration > 23) return "";
-      break;
-    case "Minutes":
-    case "Seconds":
-      if (duration > 59) return "";
-      break;
-    default:
-      return "";
-  }
-
-  return duration.toString();
 }

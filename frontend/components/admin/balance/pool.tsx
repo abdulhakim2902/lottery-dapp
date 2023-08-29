@@ -1,18 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { formatEther, parseEther } from "viem";
+import { useLottery } from "@/hooks/use-lottery.hook";
+import { useToken } from "@/hooks/use-token.hook";
 
-import styles from "./admin.module.css";
+import styles from "./balance.module.css";
 
-interface Props {
-  pool: bigint;
-  loading: boolean;
-  onWithdraw: (amount: bigint, cb?: () => void) => Promise<void>;
-}
+export function Pool() {
+  const {
+    contract,
+    ownerPool,
+    ownerWithdraw: { writeAsync },
+  } = useLottery();
+  const { symbol } = useToken(contract);
 
-export function OwnerPool(props: Props) {
-  const { pool, onWithdraw, loading } = props;
-
-  const [ownerPool, setOwnerPool] = useState<bigint>(BigInt(0));
+  const [loading, setLoading] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>("0");
   const [amountBN, setAmountBN] = useState<bigint>(BigInt(0));
 
@@ -21,7 +22,7 @@ export function OwnerPool(props: Props) {
     const amount = validateNumber(value);
     if (!amount) return;
     const amountBN = parseEther(amount as `${number}`);
-    if (amountBN > pool) {
+    if (amountBN > ownerPool) {
       return;
     }
 
@@ -29,24 +30,28 @@ export function OwnerPool(props: Props) {
     setAmountBN(amountBN);
   };
 
-  const onWithdrawToken = async () => {
-    await onWithdraw(amountBN, () => {
+  const onWithdraw = async () => {
+    setLoading(true);
+
+    try {
+      await writeAsync({ args: [amountBN] });
       setAmountBN(BigInt(0));
       setAmount("0");
-      setOwnerPool((pool) => pool - amountBN);
-    });
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    setOwnerPool(pool);
-  }, [pool]);
-
   return (
-    <div className={styles.container}>
+    <div className={styles.row}>
       <p className={styles.title}>Owner pool</p>
-      <p>Token Amount: {formatEther(ownerPool)}</p>
+      <p>
+        Token Amount: {formatEther(ownerPool)} {symbol}
+      </p>
       <input value={amount} onChange={onChange} disabled={loading} />
-      <button disabled={loading || ownerPool <= 0} onClick={onWithdrawToken}>
+      <button disabled={loading || ownerPool <= 0} onClick={onWithdraw}>
         {loading ? "Withdrawing..." : "Withdraw"}
       </button>
     </div>

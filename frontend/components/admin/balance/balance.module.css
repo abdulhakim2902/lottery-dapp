@@ -1,0 +1,30 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.row button {
+  margin-top: 1rem;
+  padding: 0.5rem 2rem;
+}
+
+.row input {
+  width: 100px;
+  height: 1.5rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 380px;
+}

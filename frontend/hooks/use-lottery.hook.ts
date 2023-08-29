@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useContractRead, useContractWrite, useNetwork } from "wagmi";
+import {
+  useAccount,
+  useContractRead,
+  useContractWrite,
+  useNetwork,
+} from "wagmi";
 import { useSnackbar } from "notistack";
 import { waitForTransaction } from "@wagmi/core";
 import { ExplorerURL } from "@/components/common/explorer-url";
@@ -16,6 +21,7 @@ export function useLottery() {
   const [totalBet, setTotalBet] = useState<bigint>(BigInt(0));
 
   const { enqueueSnackbar } = useSnackbar();
+  const { address } = useAccount();
   const { chain } = useNetwork();
 
   const betPrice = useContractRead({
@@ -71,6 +77,22 @@ export function useLottery() {
     abi: LOTTERY.abi as any,
     functionName: "owner",
     args: [],
+  });
+
+  const prize = useContractRead({
+    address: LOTTERY_CONTRACT as `0x${string}`,
+    abi: LOTTERY.abi as any,
+    functionName: "prize",
+    args: [address ?? LOTTERY_CONTRACT],
+    watch: true,
+  });
+
+  const prizePool = useContractRead({
+    address: LOTTERY_CONTRACT as `0x${string}`,
+    abi: LOTTERY.abi as any,
+    functionName: "prizePool",
+    args: [],
+    watch: true,
   });
 
   const onError = (error: any) => {
@@ -169,10 +191,14 @@ export function useLottery() {
     returnTokens,
     purchaseTokens,
     totalBet,
+    betFee: (betFee as ContractData)?.data ?? BigInt(0),
+    betPrize: (betPrice as ContractData)?.data ?? BigInt(0),
     betsOpen: Boolean(betsOpen?.data),
     ownerPool: (ownerPool as ContractData)?.data ?? BigInt(0),
     betsClosingTime: (betsClosingTime as ContractData)?.data ?? BigInt(0),
     purchaseRatio: (purchaseRatio as ContractData)?.data ?? BigInt(0),
     owner: owner?.data ?? "",
+    prize: (prize as ContractData)?.data ?? BigInt(0),
+    prizePool: (prizePool as ContractData)?.data ?? BigInt(0),
   };
 }
