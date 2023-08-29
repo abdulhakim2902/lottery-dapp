@@ -96,6 +96,7 @@ export function Balance() {
         Token Amount: {formatEther(balance)} {symbol}
       </p>
       <input
+        style={{marginBottom: "20px"}}
         value={amount}
         onChange={onChange}
         disabled={loading || isConnecting || isDisconnected}
