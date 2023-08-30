@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   useAccount,
+  useContractEvent,
   useContractRead,
   useContractWrite,
   useNetwork,
@@ -10,6 +11,7 @@ import { waitForTransaction } from "@wagmi/core";
 import { ExplorerURL } from "@/components/common/explorer-url";
 
 import LOTTERY from "@/artifacts/lottery.json";
+import { decodeEventLog } from "viem";
 
 const LOTTERY_CONTRACT = process.env.NEXT_PUBLIC_LOTTERY_CONTRACT;
 
@@ -17,7 +19,14 @@ interface ContractData {
   data?: bigint;
 }
 
+interface Event {
+  sender: string;
+  totalBet: string;
+  timestamp: number;
+}
+
 export function useLottery() {
+  const [events, setEvents] = useState<Event[]>([]);
   const [totalBet, setTotalBet] = useState<bigint>(BigInt(0));
 
   const { enqueueSnackbar } = useSnackbar();
@@ -134,6 +143,14 @@ export function useLottery() {
     onSuccess,
   });
 
+  const prizeWithdraw = useContractWrite({
+    address: LOTTERY_CONTRACT as `0x${string}`,
+    abi: LOTTERY.abi,
+    functionName: "prizeWithdraw",
+    onError,
+    onSuccess,
+  });
+
   const closeLottery = useContractWrite({
     address: LOTTERY_CONTRACT as `0x${string}`,
     abi: LOTTERY.abi,
@@ -174,6 +191,32 @@ export function useLottery() {
     onSuccess,
   });
 
+  const unwatch = useContractEvent({
+    address: LOTTERY_CONTRACT as `0x${string}`,
+    abi: LOTTERY.abi,
+    eventName: "PlaceBets",
+    listener: (logs) => {
+      logs.forEach((log) => {
+        const result = decodeEventLog({
+          abi: LOTTERY.abi,
+          data: log.data,
+          topics: log.topics,
+          eventName: "PlaceBets",
+        });
+
+        const newEvent = {
+          sender: (result.args as any).sender,
+          totalBet: (result.args as any).totalBet.toString(),
+          timestamp: Date.now(),
+        };
+
+        setEvents((events) => [newEvent, ...events].slice(0, 11));
+      });
+
+      unwatch?.();
+    },
+  });
+
   useEffect(() => {
     const fee = betFee as ContractData;
     const price = betPrice as ContractData;
@@ -187,6 +230,7 @@ export function useLottery() {
     betMany,
     openBets,
     ownerWithdraw,
+    prizeWithdraw,
     closeLottery,
     returnTokens,
     purchaseTokens,
@@ -200,5 +244,6 @@ export function useLottery() {
     owner: owner?.data ?? "",
     prize: (prize as ContractData)?.data ?? BigInt(0),
     prizePool: (prizePool as ContractData)?.data ?? BigInt(0),
+    events,
   };
 }

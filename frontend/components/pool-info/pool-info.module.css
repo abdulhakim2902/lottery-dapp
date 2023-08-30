@@ -16,3 +16,19 @@
   font-size: small;
   padding-top: 10px;
 }
+
+.table_container {
+  font-size: small;
+  font-weight: lighter;
+  border: 1px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.table_container th,
+.table_container td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}

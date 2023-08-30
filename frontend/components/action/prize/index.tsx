@@ -15,7 +15,7 @@ export function Prize() {
   const {
     contract,
     prize,
-    ownerWithdraw: { writeAsync },
+    prizeWithdraw: { writeAsync },
   } = useLottery();
   const { symbol } = useToken(contract);
 
