@@ -51,6 +51,14 @@ contract Lottery is Ownable {
         betFee = _betFee;
     }
 
+    event BetsStatus(bool isOpen, uint256 closingTime);
+    event PurchaseToken(address sender, uint256 amount);
+    event PlaceBets(address sender, uint256 totalBet);
+    event ClaimReward(address receiver, uint256 amount);
+    event Withdraw(address receiver, uint256 amount);
+    event Winner(address receiver, uint256 amount);
+    event SellToken(address receiver, uint256 tokenAmount, uint256 amount);
+
     /// @notice Passes when the lottery is at closed state
     modifier whenBetsClosed() {
         require(!betsOpen, "Lottery is open");
@@ -74,12 +82,16 @@ contract Lottery is Ownable {
         );
         betsClosingTime = closingTime;
         betsOpen = true;
+
+        emit BetsStatus(true, closingTime);
     }
 
     /// @notice Gives tokens based on the amount of ETH sent
     /// @dev This implementation is prone to rounding problems
     function purchaseTokens() external payable {
         paymentToken.mint(msg.sender, msg.value * purchaseRatio);
+
+        emit PurchaseToken(msg.sender, msg.value * purchaseRatio);
     }
 
     /// @notice Charges the bet price and creates a new bet slot with the sender's address
@@ -88,6 +100,8 @@ contract Lottery is Ownable {
         prizePool += betPrice;
         _slots.push(msg.sender);
         paymentToken.transferFrom(msg.sender, address(this), betPrice + betFee);
+
+        emit PlaceBets(msg.sender, 1);
     }
 
     /// @notice Calls the bet function `times` times
@@ -97,6 +111,8 @@ contract Lottery is Ownable {
             bet();
             times--;
         }
+
+        emit PlaceBets(msg.sender, times);
     }
 
     /// @notice Closes the lottery and calculates the prize, if any
@@ -108,10 +124,15 @@ contract Lottery is Ownable {
             uint256 winnerIndex = getRandomNumber() % _slots.length;
             address winner = _slots[winnerIndex];
             prize[winner] += prizePool;
+
+            emit Winner(winner, prizePool);
+
             prizePool = 0;
             delete (_slots);
         }
         betsOpen = false;
+
+        emit BetsStatus(false, betsClosingTime);
     }
 
     /// @notice Returns a random number calculated from the previous block randao
@@ -125,6 +146,8 @@ contract Lottery is Ownable {
         require(amount <= prize[msg.sender], "Not enough prize");
         prize[msg.sender] -= amount;
         paymentToken.transfer(msg.sender, amount);
+
+        emit ClaimReward(msg.sender, amount);
     }
 
     /// @notice Withdraws `amount` from the owner's pool
@@ -132,11 +155,15 @@ contract Lottery is Ownable {
         require(amount <= ownerPool, "Not enough fees collected");
         ownerPool -= amount;
         paymentToken.transfer(msg.sender, amount);
+
+        emit Withdraw(msg.sender, amount);
     }
 
     /// @notice Burns `amount` tokens and give the equivalent ETH back to user
     function returnTokens(uint256 amount) external {
         paymentToken.burnFrom(msg.sender, amount);
         payable(msg.sender).transfer(amount / purchaseRatio);
+
+        emit SellToken(msg.sender, amount, amount / purchaseRatio);
     }
 }
