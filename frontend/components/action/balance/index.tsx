@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useSnackbar } from "notistack";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
 import { useToken } from "@/hooks/use-token.hook";
@@ -14,9 +13,8 @@ export function Balance() {
   const [amount, setAmount] = useState<string>("0");
   const [amountBN, setAmountBN] = useState<bigint>(BigInt(0));
 
-  const { enqueueSnackbar } = useSnackbar();
   const { isDisconnected, isConnecting } = useAccount();
-  const { contract, returnTokens, purchaseRatio } = useLottery();
+  const { contract, returnTokens } = useLottery();
   const { balance, approve, allowance } = useToken(contract);
 
   const { writeAsync: writeReturnTokens } = returnTokens;
@@ -81,24 +79,14 @@ export function Balance() {
     }
   };
 
-  const onMouseLeave = () => {
-    if (purchaseRatio <= 0) return;
-    if (amountBN <= 0) return;
-    enqueueSnackbar({
-      variant: "info",
-      message: `You will receive ${formatEther(amountBN / purchaseRatio)} ETH`,
-    });
-  };
-
   return (
     <div className={styles.container}>
-      <p>Token Amount: {formatEther(balance)}</p>
+      <p>Balance: {formatEther(balance)}</p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}
         onChange={onChange}
         disabled={loading || isConnecting || isDisconnected}
-        onMouseLeave={onMouseLeave}
       />
       <button
         disabled={loading || balance <= 0}

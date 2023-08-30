@@ -13,9 +13,8 @@ export function Balance() {
   const [amount, setAmount] = useState<string>("0");
   const [amountBN, setAmountBN] = useState<bigint>(BigInt(0));
 
-  const { enqueueSnackbar } = useSnackbar();
-  const { contract, returnTokens, purchaseRatio } = useLottery();
-  const { balance, approve, allowance } = useToken(contract);
+  const { contract, returnTokens } = useLottery();
+  const { balance, approve, allowance, symbol } = useToken(contract);
 
   const { writeAsync: writeReturnTokens } = returnTokens;
   const { writeAsync: writeApprove } = approve;
@@ -79,25 +78,12 @@ export function Balance() {
     }
   };
 
-  const onMouseLeave = () => {
-    if (purchaseRatio <= 0) return;
-    if (amountBN <= 0) return;
-    enqueueSnackbar({
-      variant: "info",
-      message: `You will receive ${formatEther(amountBN / purchaseRatio)} ETH`,
-    });
-  };
-
   return (
     <div className={styles.row}>
-      <p className={styles.title}>Admin balance</p>
-      <p>Token Amount: {formatEther(balance)}</p>
-      <input
-        value={amount}
-        onChange={onChange}
-        disabled={loading}
-        onMouseLeave={onMouseLeave}
-      />
+      <p>
+        Balance: {formatEther(balance)} {symbol}
+      </p>
+      <input value={amount} onChange={onChange} disabled={loading} />
       <button
         disabled={loading || balance <= 0}
         onClick={approved ? onReturn : onApprove}

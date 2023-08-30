@@ -23,6 +23,7 @@ export function Duration(props: DurationProps) {
     let durationInMs = 0;
     switch (dimension) {
       case "Days":
+        if (+currentDuration > 7) return
         durationInMs = +currentDuration * 24 * 60 * 60 * 1000;
         break;
       case "Hours":

@@ -45,7 +45,7 @@ export function Prize() {
 
   return (
     <div className={styles.container}>
-      <p>Total Prize: {formatEther(prize)}</p>
+      <p>Prize: {formatEther(prize)}</p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}

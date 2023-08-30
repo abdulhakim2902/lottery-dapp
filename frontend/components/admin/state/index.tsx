@@ -79,6 +79,8 @@ export function LotteryState() {
   };
 
   const onStart = async () => {
+    if (closingTimeDuration <= 0) return;
+
     setLoading(true);
 
     try {
@@ -139,7 +141,10 @@ export function LotteryState() {
           </div>
         </div>
         <div>
-          <button disabled={loading} onClick={onStart}>
+          <button
+            disabled={loading || closingTimeDuration <= 0}
+            onClick={onStart}
+          >
             {loading ? "Starting..." : "Start"}
           </button>
           <button disabled={loading} onClick={onReset}>
