@@ -3,6 +3,13 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {LotteryToken} from "./LotteryToken.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+interface ILotteryToken is IERC20, IERC20Metadata {
+    function mint(address account, uint256 amount) external;
+    function burnFrom(address account, uint256 amount) external;
+}
 
 /// @title A very simple lottery contract
 /// @author Matheus Pagani
@@ -11,7 +18,7 @@ import {LotteryToken} from "./LotteryToken.sol";
 /// @custom:teaching This is a contract meant for teaching only
 contract Lottery is Ownable {
     /// @notice Address of the token used as payment for the bets
-    LotteryToken public paymentToken;
+    ILotteryToken public paymentToken;
     /// @notice Amount of tokens given per ETH paid
     uint256 public purchaseRatio;
     /// @notice Amount of tokens required for placing a bet that goes for the prize pool
@@ -33,22 +40,18 @@ contract Lottery is Ownable {
     address[] _slots;
 
     /// @notice Constructor function
-    /// @param tokenName Name of the token used for payment
-    /// @param tokenSymbol Symbol of the token used for payment
+    /// @param _lotteryToken Token address used for payment
     /// @param _purchaseRatio Amount of tokens given per ETH paid
     /// @param _betPrice Amount of tokens required for placing a bet that goes for the prize pool
-    /// @param _betFee Amount of tokens required for placing a bet that goes for the owner pool
     constructor(
-        string memory tokenName,
-        string memory tokenSymbol,
+        address _lotteryToken,
         uint256 _purchaseRatio,
-        uint256 _betPrice,
-        uint256 _betFee
+        uint256 _betPrice
     ) {
-        paymentToken = new LotteryToken(tokenName, tokenSymbol);
+        paymentToken = ILotteryToken(_lotteryToken);
         purchaseRatio = _purchaseRatio;
         betPrice = _betPrice;
-        betFee = _betFee;
+        betFee = _betPrice / 100; // 1% of the betPrice
     }
 
     event BetsStatus(bool isOpen, uint256 closingTime);
@@ -111,8 +114,6 @@ contract Lottery is Ownable {
             bet();
             times--;
         }
-
-        emit PlaceBets(msg.sender, times);
     }
 
     /// @notice Closes the lottery and calculates the prize, if any
