@@ -2,6 +2,7 @@ import { useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
 import { useAccount } from "wagmi";
+import { useToken } from "@/hooks/use-token.hook";
 
 import styles from "./prize.module.css";
 
@@ -12,9 +13,11 @@ export function Prize() {
 
   const { isDisconnected, isConnecting } = useAccount();
   const {
+    contract,
     prize,
     ownerWithdraw: { writeAsync },
   } = useLottery();
+  const { symbol } = useToken(contract);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -45,7 +48,9 @@ export function Prize() {
 
   return (
     <div className={styles.container}>
-      <p>Prize: {formatEther(prize)}</p>
+      <p>
+        Prize: {formatEther(prize)} {symbol}
+      </p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}

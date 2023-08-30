@@ -15,7 +15,7 @@ export function Balance() {
 
   const { isDisconnected, isConnecting } = useAccount();
   const { contract, returnTokens } = useLottery();
-  const { balance, approve, allowance } = useToken(contract);
+  const { balance, approve, allowance, symbol } = useToken(contract);
 
   const { writeAsync: writeReturnTokens } = returnTokens;
   const { writeAsync: writeApprove } = approve;
@@ -81,7 +81,9 @@ export function Balance() {
 
   return (
     <div className={styles.container}>
-      <p>Balance: {formatEther(balance)}</p>
+      <p>
+        Balance: {formatEther(balance)} {symbol}
+      </p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}

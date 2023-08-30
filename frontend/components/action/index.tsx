@@ -4,12 +4,12 @@ import { Balance } from "./balance";
 import { useAccount } from "wagmi";
 import { useLottery } from "@/hooks/use-lottery.hook";
 import { useToken } from "@/hooks/use-token.hook";
+import { Prize } from "./prize";
 
 import ShowIf from "../common/show-if";
 
 import dynamic from "next/dynamic";
 import styles from "./action.module.css";
-import { Prize } from "./prize";
 
 const PlaceBets = dynamic(() => import("./bets"), { ssr: false });
 
