@@ -52,7 +52,7 @@ export function Prize() {
         Total Prize: {formatEther(prize)} {symbol}
       </p>
       <input
-        style={{marginBottom: "20px"}}
+        style={{ marginBottom: "20px" }}
         value={amount}
         onChange={onChange}
         disabled={loading || isConnecting || isDisconnected}

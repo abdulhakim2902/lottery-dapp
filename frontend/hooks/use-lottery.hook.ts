@@ -182,7 +182,7 @@ export function useLottery() {
   }, [betFee, betPrice]);
 
   return {
-    contract: LOTTERY_CONTRACT,
+    contract: LOTTERY_CONTRACT as `0x${string}`,
     bet,
     betMany,
     openBets,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAccount, useBalance } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
@@ -10,20 +10,13 @@ export function BuyToken() {
   const [ethAmountBN, setEthAmountBN] = useState<bigint>(BigInt(0));
   const [amount, setAmount] = useState<`${number}`>("0");
   const [ethAmount, setEthAmount] = useState<string>("0");
-  const [disabled, setDisabled] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
 
   const { address, isDisconnected, isConnecting } = useAccount();
   const { contract, purchaseTokens, purchaseRatio } = useLottery();
   const { symbol } = useToken(contract);
-  const { data } = useBalance({
-    address: address ?? (contract as `0x${string}`),
-  });
+  const { data } = useBalance({ address: address ?? contract });
   const { writeAsync } = purchaseTokens;
-
-  useEffect(() => {
-    setDisabled(isConnecting);
-  }, [isConnecting]);
 
   const onBuyToken = async () => {
     setLoading(true);
@@ -43,6 +36,7 @@ export function BuyToken() {
 
   const onChangeAmount = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!data) return;
+    if (purchaseRatio <= 0) return;
     const value = event.target.value;
     const tokenAmount = validateNumber(value);
     if (!tokenAmount) {
@@ -66,11 +60,11 @@ export function BuyToken() {
       <input
         value={amount}
         onChange={onChangeAmount}
-        disabled={loading || isDisconnected || disabled}
+        disabled={loading || isDisconnected || isConnecting}
       />
       <p style={{ marginBottom: "20px" }}>Price: {ethAmount} ETH</p>
       <button
-        disabled={loading || isDisconnected || disabled}
+        disabled={loading || isDisconnected || isConnecting}
         onClick={onBuyToken}
       >
         {loading ? "Purchasing..." : `Purchase ${symbol} Token`}
