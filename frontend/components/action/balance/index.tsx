@@ -17,7 +17,7 @@ export function Balance() {
   const { enqueueSnackbar } = useSnackbar();
   const { isDisconnected, isConnecting } = useAccount();
   const { contract, returnTokens, purchaseRatio } = useLottery();
-  const { balance, approve, allowance, symbol } = useToken(contract);
+  const { balance, approve, allowance } = useToken(contract);
 
   const { writeAsync: writeReturnTokens } = returnTokens;
   const { writeAsync: writeApprove } = approve;
@@ -31,12 +31,12 @@ export function Balance() {
       }
     } else {
       if (approved) {
-        setText(`Return ${symbol} Token`);
+        setText(`Return Token`);
       } else {
         setText("Approve");
       }
     }
-  }, [approved, loading, symbol]);
+  }, [approved, loading]);
 
   useEffect(() => {
     setApproved(allowance >= amountBN);
@@ -92,9 +92,7 @@ export function Balance() {
 
   return (
     <div className={styles.container}>
-      <p>
-        Token Amount: {formatEther(balance)} {symbol}
-      </p>
+      <p>Token Amount: {formatEther(balance)}</p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}

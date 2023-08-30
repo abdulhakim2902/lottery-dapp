@@ -14,10 +14,10 @@ export default function PoolInfo() {
     <div className={styles.container}>
       <h4>Pool Info</h4>
       <p>
-        Total Bet: {formatEther(betPrize)} {symbol}
+        Bet Size: {formatEther(betPrize)} {symbol}
       </p>
       <p>
-        Total Fee: {formatEther(betFee)} {symbol}
+        Bet Fee: {formatEther(betFee)} {symbol}
       </p>
       <p>
         Total Prize: {formatEther(prizePool)} {symbol}

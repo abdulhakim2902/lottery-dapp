@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
-import { useToken } from "@/hooks/use-token.hook";
 
 import styles from "./balance.module.css";
 
 export function Pool() {
   const {
-    contract,
     ownerPool,
     ownerWithdraw: { writeAsync },
   } = useLottery();
-  const { symbol } = useToken(contract);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>("0");
@@ -47,9 +44,7 @@ export function Pool() {
   return (
     <div className={styles.row}>
       <p className={styles.title}>Owner pool</p>
-      <p>
-        Token Amount: {formatEther(ownerPool)} {symbol}
-      </p>
+      <p>Token Amount: {formatEther(ownerPool)}</p>
       <input value={amount} onChange={onChange} disabled={loading} />
       <button disabled={loading || ownerPool <= 0} onClick={onWithdraw}>
         {loading ? "Withdrawing..." : "Withdraw"}

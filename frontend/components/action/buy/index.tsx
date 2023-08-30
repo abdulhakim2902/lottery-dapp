@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAccount, useBalance } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
-import { useToken } from "@/hooks/use-token.hook";
 
 import styles from "./buy.module.css";
 
@@ -14,7 +13,6 @@ export function BuyToken() {
 
   const { address, isDisconnected, isConnecting } = useAccount();
   const { contract, purchaseTokens, purchaseRatio } = useLottery();
-  const { symbol } = useToken(contract);
   const { data } = useBalance({ address: address ?? contract });
   const { writeAsync } = purchaseTokens;
 
@@ -67,7 +65,7 @@ export function BuyToken() {
         disabled={loading || isDisconnected || isConnecting}
         onClick={onBuyToken}
       >
-        {loading ? "Purchasing..." : `Purchase ${symbol} Token`}
+        {loading ? "Purchasing..." : "Purchase Token"}
       </button>
     </div>
   );

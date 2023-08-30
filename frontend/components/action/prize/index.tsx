@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useLottery } from "@/hooks/use-lottery.hook";
-import { useToken } from "@/hooks/use-token.hook";
+import { useAccount } from "wagmi";
 
 import styles from "./prize.module.css";
-import { useAccount } from "wagmi";
 
 export function Prize() {
   const [loading, setLoading] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>("0");
   const [amountBN, setAmountBN] = useState<bigint>(BigInt(0));
 
+  const { isDisconnected, isConnecting } = useAccount();
   const {
-    contract,
     prize,
     ownerWithdraw: { writeAsync },
   } = useLottery();
-  const { isDisconnected, isConnecting } = useAccount();
-  const { symbol } = useToken(contract);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -48,9 +45,7 @@ export function Prize() {
 
   return (
     <div className={styles.container}>
-      <p>
-        Total Prize: {formatEther(prize)} {symbol}
-      </p>
+      <p>Total Prize: {formatEther(prize)}</p>
       <input
         style={{ marginBottom: "20px" }}
         value={amount}

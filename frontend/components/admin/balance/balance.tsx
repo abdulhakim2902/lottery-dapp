@@ -15,7 +15,7 @@ export function Balance() {
 
   const { enqueueSnackbar } = useSnackbar();
   const { contract, returnTokens, purchaseRatio } = useLottery();
-  const { balance, approve, allowance, symbol } = useToken(contract);
+  const { balance, approve, allowance } = useToken(contract);
 
   const { writeAsync: writeReturnTokens } = returnTokens;
   const { writeAsync: writeApprove } = approve;
@@ -29,16 +29,16 @@ export function Balance() {
       }
     } else {
       if (approved) {
-        setText(`Return ${symbol} Token`);
+        setText(`Return Token`);
       } else {
         setText("Approve");
       }
     }
-  }, [approved, loading, symbol]);
+  }, [approved, loading]);
 
   useEffect(() => {
     setApproved(allowance >= amountBN);
-  }, [amountBN, allowance, symbol]);
+  }, [amountBN, allowance]);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -91,9 +91,7 @@ export function Balance() {
   return (
     <div className={styles.row}>
       <p className={styles.title}>Admin balance</p>
-      <p>
-        Token Amount: {formatEther(balance)} {symbol}
-      </p>
+      <p>Token Amount: {formatEther(balance)}</p>
       <input
         value={amount}
         onChange={onChange}
