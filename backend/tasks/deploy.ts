@@ -1,18 +1,15 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployArgument } from "../interfaces";
-import { getParams } from "../helpers";
 
 export async function deploy(
   args: DeployArgument,
   hre: HardhatRuntimeEnvironment,
 ) {
   const { run, ethers, network } = hre;
-  const { name } = args;
+  const { name, params } = args;
 
   try {
     await run("compile");
-
-    const params = await getParams(hre, args);
 
     const [deployer] = await ethers.getSigners();
 
@@ -32,7 +29,7 @@ export async function deploy(
 
     console.log("Contract is deployed at", contractAddress);
 
-    return { contract, address: contractAddress, params };
+    return { contract, address: contractAddress };
   } catch (err) {
     console.log(err);
   }
@@ -44,8 +41,8 @@ export async function deployAndVerify(
 ) {
   try {
     const { run } = hre;
-    const { name } = args;
-    const { contract, address, params } = await run("deploy", args);
+    const { name, params } = args;
+    const { contract, address } = await run("deploy", args);
 
     console.log("Waiting for block confirmations...");
 

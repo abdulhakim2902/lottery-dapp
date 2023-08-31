@@ -5,10 +5,5 @@ export interface Contract {
 
 export interface DeployArgument {
   name: string;
-  params: Params;
-}
-
-// Params lists
-export interface Params {
-  [any: string]: any;
+  params: string[];
 }

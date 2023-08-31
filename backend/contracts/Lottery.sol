@@ -3,13 +3,6 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {LotteryToken} from "./LotteryToken.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-
-interface ILotteryToken is IERC20, IERC20Metadata {
-    function mint(address account, uint256 amount) external;
-    function burnFrom(address account, uint256 amount) external;
-}
 
 /// @title A very simple lottery contract
 /// @author Matheus Pagani
@@ -18,7 +11,7 @@ interface ILotteryToken is IERC20, IERC20Metadata {
 /// @custom:teaching This is a contract meant for teaching only
 contract Lottery is Ownable {
     /// @notice Address of the token used as payment for the bets
-    ILotteryToken public paymentToken;
+    LotteryToken public paymentToken;
     /// @notice Amount of tokens given per ETH paid
     uint256 public purchaseRatio;
     /// @notice Amount of tokens required for placing a bet that goes for the prize pool
@@ -40,15 +33,13 @@ contract Lottery is Ownable {
     address[] _slots;
 
     /// @notice Constructor function
-    /// @param _lotteryToken Token address used for payment
     /// @param _purchaseRatio Amount of tokens given per ETH paid
     /// @param _betPrice Amount of tokens required for placing a bet that goes for the prize pool
     constructor(
-        address _lotteryToken,
         uint256 _purchaseRatio,
         uint256 _betPrice
     ) {
-        paymentToken = ILotteryToken(_lotteryToken);
+        paymentToken = new LotteryToken("Lottery Token", "LTK");
         purchaseRatio = _purchaseRatio;
         betPrice = _betPrice;
         betFee = _betPrice / 100; // 1% of the betPrice
